@@ -1,0 +1,111 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+
+
+```{r}
+
+#loading the neccesary libraries 
+library(dplyr)
+library(readxl)
+
+# Loading all sheets of the dummy dataset
+hypertension_withundiagnosed <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 1)
+hypertension_woutundiagnosed <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 2)
+hypertension_withuncontrolled <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 3)
+hypertension_woutcontrolled <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 4)
+
+# Checking the structure of the datasets
+str(hypertension_woutundiagnosed)
+str(hypertension_woutcontrolled)
+str(hypertension_withuncontrolled)
+
+# Category 2: Diagnosed and Controlled
+category2_dataset <- inner_join(hypertension_woutundiagnosed, hypertension_woutcontrolled, by = "id") %>%
+  distinct() %>%
+  mutate(category = "Diagnosed and Controlled")
+
+# Category 3: Diagnosed but Uncontrolled
+category3_dataset <- inner_join(hypertension_woutundiagnosed, hypertension_withuncontrolled, by = "id") %>%
+  anti_join(category2_dataset, by = "id") %>%
+  distinct() %>%
+  mutate(category = "Diagnosed but Uncontrolled")
+
+# Combining categories into a single dataset
+final_dataset <- bind_rows(category2_dataset, category3_dataset)
+
+# Validating dataset sizes
+cat("Category 2 (Diagnosed and Controlled) size:", nrow(category2_dataset), "\n")
+cat("Category 3 (Diagnosed but Uncontrolled) size:", nrow(category3_dataset), "\n")
+cat("Final dataset size:", nrow(final_dataset), "\n")
+
+# Checking for overlap
+overlap <- intersect(category2_dataset$id, category3_dataset$id)
+cat("Number of overlapping patients:", length(overlap), "\n")
+
+# Checking available columns
+print(names(final_dataset))
+
+# Saving the results
+write.csv(final_dataset, "final_hypertension_dataset.csv", row.names = FALSE)
+
+# Probabilities for each category
+probabilities <- c("Undiagnosed and Uncontrolled" = 0.0072, 
+                   "Diagnosed and Controlled" = 0.8372, 
+                   "Diagnosed but Uncontrolled" = 0.0728)
+
+# Assigning categories based on the probabilities
+set.seed(123)  
+final_dataset <- final_dataset %>%
+  mutate(
+    assigned_category = sample(
+      names(probabilities), 
+      size = n(), 
+      replace = TRUE, 
+      prob = probabilities
+    )
+  )
+
+# Verifying the resulting distribution
+distribution <- final_dataset %>%
+  group_by(assigned_category) %>%
+  summarise(count = n(), .groups = 'drop')
+
+cat("Distribution after probabilistic assignment:\n")
+print(distribution)
+
+# View descriptive statistics by category
+# Replacing 'AgeGroup' with an actual numerical column from your dataset
+numeric_column <- names(final_dataset)[sapply(final_dataset, is.numeric)][1]
+
+if (!is.null(numeric_column)) {
+  summary_stats <- final_dataset %>%
+    group_by(assigned_category) %>%
+    summarise(
+      count = n(),
+      mean_value = mean(!!sym(numeric_column), na.rm = TRUE),
+      sd_value = sd(!!sym(numeric_column), na.rm = TRUE)
+    )
+  print(summary_stats)
+} else {
+  cat("No numerical columns found for summary statistics.\n")
+}
+```
+

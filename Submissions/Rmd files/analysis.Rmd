@@ -1,0 +1,655 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+#loading necessary packages
+library(dplyr)
+library(readxl)
+library(ggplot2)
+```
+
+```{r}
+# Loading all sheets of the dummy dataset
+
+#with Undiagnosed hypertension
+hypertension_withundiagnosed <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 1)
+
+#Without Undiagnosed HYPERTENSION
+hypertension_woutundiagnosed <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 2)
+
+#with Uncontrolled hypertension
+hypertension_withuncontrolled <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 3)
+
+#without Uncontrolled hypertension
+hypertension_woutcontrolled <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 4)
+
+```
+
+
+```{r}
+#exploring the with undiagnosed data
+
+str(hypertension_withundiagnosed)
+
+summary(hypertension_withundiagnosed)
+
+# Checking for missing values
+colSums(is.na(hypertension_withundiagnosed))
+
+
+```
+
+```{r}
+# Plot for agegroup of undiagnosed hypertension
+ggplot(hypertension_withundiagnosed, aes(x = AgeGroup)) +
+  geom_bar(fill = "darkblue", color = "black") +
+  labs(title = "Distribution of Age Groups", x = "AgeGroup", y = "Count")
+
+```
+
+```{r}
+library(RColorBrewer)
+
+# Pie chart of age group of those with undiagnosed hypertension
+ggplot(hypertension_withundiagnosed, aes(x = "", fill = BMI)) +
+  geom_bar(width = 1, stat = "count") +
+  coord_polar(theta = "y") +
+  labs(title = "Distribution of BMI") +
+  scale_fill_brewer(palette = "Blues") +
+  theme_void()
+
+```
+
+```{r}
+#socioeconomic status for undiagnosed and uncontrolled
+
+#undiagnosed
+
+print("----With undiagnosed----")
+
+table(hypertension_withundiagnosed$SocioeconomicStatus)
+
+ggplot(hypertension_withundiagnosed, aes(x = SocioeconomicStatus)) +
+  geom_bar(fill = "darkblue", color = "black") +
+  labs(title = "Distribution of Socioeconomic status Undiagnosed", x = "SocioeconomicStatus", y = "Count")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#uncontrolled
+
+print("----With uncontrolled----")
+
+
+table(hypertension_withuncontrolled$SocioeconomicStatus)
+ggplot(hypertension_withuncontrolled, aes(x = SocioeconomicStatus)) +
+  geom_bar(fill = "darkblue", color = "black") +
+  labs(title = "Distribution of Socioeconomic status Uncontrolled", x = "SocioeconomicStatus", y = "Count")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#attitude towards NHS
+print("----With uncontrolled----")
+
+ggplot(hypertension_withuncontrolled, aes(x = AttitudeNHS)) +
+  geom_bar(fill = "darkblue", color = "black") +
+  labs(title = "Distribution of AttitudeNHS Uncontrolled", x = "AttitudeNHS", y = "Count")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+table(hypertension_withuncontrolled$AttitudeNHS)
+
+print("----With undiagnosed----")
+
+table(hypertension_withundiagnosed$AttitudeNHS)
+
+ggplot(hypertension_withundiagnosed, aes(x = AttitudeNHS)) +
+  geom_bar(fill = "darkblue", color = "black") +
+  labs(title = "Distribution of AttitudeNHS Undiagnosed", x = "AttitudeNHS", y = "Count")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+```{r}
+
+# Grouping by Ethnicity and AttitudeNHS, then count occurrences
+NHS_Ethnicity <- hypertension_withundiagnosed %>%
+  group_by(Ethnicity, AttitudeNHS) %>%
+  summarize(Count = n(), .groups = "drop")
+
+print(NHS_Ethnicity)
+
+
+```
+
+
+```{r}
+#UNDIAGNOSED HYPERTENSION
+
+#BMI and Age Group
+
+# Converting BMI to a factor
+hypertension_withundiagnosed$BMI <- as.factor(hypertension_withundiagnosed$BMI)
+# Creating a contingency table between AgeGroup and BMI
+contingency_table <- table(hypertension_withundiagnosed$AgeGroup, hypertension_withundiagnosed$BMI)
+print(contingency_table)
+
+#ETHNICITY AND BMI
+# Converting Ethnicity to a factor
+hypertension_withundiagnosed$Ethnicity <- as.factor(hypertension_withundiagnosed$Ethnicity)
+hypertension_withundiagnosed$BMI <- as.factor(hypertension_withundiagnosed$BMI)
+
+# Creating a contingency table between AgeGroup and BMI
+contingency_table <- table(hypertension_withundiagnosed$BMI, hypertension_withundiagnosed$Ethnicity)
+print(contingency_table)
+
+#ALCOHOL CONSUMPTION AND ETHNICITY
+# Converting Ethnicity to a factor
+hypertension_withundiagnosed$Ethnicity <- as.factor(hypertension_withundiagnosed$Ethnicity)
+hypertension_withundiagnosed$AlcoholConsumption <- as.factor(hypertension_withundiagnosed$AlcoholConsumption)
+
+# Creating a contingency table between AgeGroup and BMI
+contingency_table <- table(hypertension_withundiagnosed$AlcoholConsumption, hypertension_withundiagnosed$Ethnicity)
+print(contingency_table)
+
+ggplot(hypertension_withundiagnosed, aes(x = AlcoholConsumption)) +
+  geom_bar(fill = "darkblue", color = "black", alpha = 0.7) +
+  labs(title = "Alcohol Consumption Distribution", x = "Alcohol Consumption", y = "Count") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+# AGE GROUP AND BMI CONTINGENCY TABLE
+# Creating the contingency table
+age_bmi_table <- table(hypertension_withundiagnosed$AgeGroup, hypertension_withundiagnosed$BMI)
+
+# Converting to percentages 
+age_bmi_percent <- round(prop.table(age_bmi_table, margin = 1) * 100,1)
+age_bmi_df <- as.data.frame.matrix(age_bmi_percent)
+print(age_bmi_df)
+
+# ETHNICITY AND BMI CONTINGENCY TABLE
+# contingency table
+ethnicity_bmi_table <- table(hypertension_withundiagnosed$BMI, hypertension_withundiagnosed$Ethnicity)
+
+# Converting to percentages 
+ethnicity_bmi_percent <- round(prop.table(ethnicity_bmi_table, margin = 1) * 100,1)
+ethnicity_bmi_df <- as.data.frame.matrix(ethnicity_bmi_percent)
+print(ethnicity_bmi_df)
+
+```
+
+
+
+```{r}
+
+# Converting AgeGroup to a factor
+hypertension_withundiagnosed$AgeGroup <- as.factor(hypertension_withundiagnosed$AgeGroup)
+
+# Creating a bar plot for AgeGroup
+ggplot(hypertension_withundiagnosed, aes(x = AgeGroup)) +
+  geom_bar(fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Age Group Distribution", x = "Age Group", y = "Count") +
+  theme_minimal()
+
+# Converting BMI to a factor
+hypertension_withundiagnosed$BMI <- as.factor(hypertension_withundiagnosed$BMI)
+
+# Creating a grouped bar plot for AgeGroup and BMI
+ggplot(hypertension_withundiagnosed, aes(x = AgeGroup, fill = BMI)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Age Group vs BMI", x = "Age Group", y = "Count") +
+  theme_minimal()
+
+# Contingency table for AgeGroup and BMI
+contingency_table <- table(hypertension_withundiagnosed$AgeGroup, hypertension_withundiagnosed$BMI)
+print(contingency_table)
+
+# Chi-square test for association between AgeGroup and BMI
+chi_square_test <- chisq.test(contingency_table)
+print(chi_square_test)
+
+
+
+```
+
+
+```{r}
+#WITHOUT UNDIAGONISED HYPERTENSION
+
+summary(hypertension_woutundiagnosed)
+```
+
+```{r}
+#AGE GROUP, BMI, ETHNICITY AND EDUCATION 
+
+# WITHOUT UNDIAGNOSED AND UNCONTROLLED HYPERTENSION
+
+#AGE GROUP
+#Age distribution of both with diagnosed and undiagnosed
+
+# Adding a column to distinguish diagnosed from undiagnosed
+hypertension_woutundiagnosed$Dataset <- "withdiagnosed"
+hypertension_withuncontrolled$Dataset <- "withuncontrolled"
+
+diagnosed <- rbind(hypertension_woutundiagnosed, hypertension_withuncontrolled)
+
+# Grouped bar plot to compare AgeGroup distribution across two datasets
+ggplot(diagnosed, aes(x = AgeGroup, fill = Dataset)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Comparison of Age Group Distribution Between Diagnosed and Uncontrolled", 
+       x = "Age Group", y = "Count") +
+  theme_minimal()
+
+#BMI
+# contingency table without undiagnosed 
+print('with diagnosed')
+table(hypertension_woutundiagnosed$BMI)
+
+# contingency table without uncontrolled
+print('with uncontrolled')
+table(hypertension_withuncontrolled$BMI)
+
+#Ethnicity
+# contingency table without undiagnosed 
+print('with diagnosed')
+table(hypertension_woutundiagnosed$Ethnicity)
+
+# contingency table without uncontrolled
+print('with uncontrolled')
+table(hypertension_withuncontrolled$Ethnicity)
+
+#ETHNICITY
+#ETHNICITY - Combining the datasets for visualisation
+hypertension_woutundiagnosed$Dataset <- "withdiagnosed"
+hypertension_withuncontrolled$Dataset <- "withuncontrolled"
+
+# Combining the two datasets
+diagnosed <- rbind(hypertension_woutundiagnosed, hypertension_withuncontrolled)
+
+# Convering Ethnicity to factor if it's not already
+diagnosed$Ethnicity <- as.factor(diagnosed$Ethnicity)
+
+# Grouped bar plot to compare Ethnicity distribution across the two datasets
+ggplot(diagnosed, aes(x = Ethnicity, fill = Dataset)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Ethnicity Distribution Between Diagnosed and Uncontrolled", 
+       x = "Ethnicity", y = "Count") +
+  theme_minimal()
+
+#EDUCATION
+# Pie Chart for Undiagnosed Hypertension
+
+dark_green_palette <- colorRampPalette(c("darkgreen", "forestgreen", "seagreen"))
+
+pale_blue_palette <- colorRampPalette(c("lightblue", "skyblue", "steelblue"))
+
+
+woutundiagnosed_education <- table(hypertension_woutundiagnosed$Education)
+pie(woutundiagnosed_education, 
+    main = "Education Distribution in Undiagnosed Hypertension", 
+    col = pale_blue_palette(length(woutundiagnosed_education)))
+
+# Pie Chart for Uncontrolled Hypertension
+uncontrolled_education <- table(hypertension_withuncontrolled$Education)
+pie(uncontrolled_education, 
+    main = "Education Distribution in Uncontrolled Hypertension", 
+    col = pale_blue_palette(length(uncontrolled_education)))
+
+
+```
+
+```{r}
+#AGE GROUP, BMI, ETHNICITY AND EDUCATION 
+
+# WITH DIAGNOSED AND CONTROLLED HYPERTENSION
+
+#AGE GROUP
+#Age distribution of both with diagnosed and without uncontrolled
+
+# Adding a column to distinguish diagnosed from undiagnosed
+hypertension_woutundiagnosed$Dataset <- "withdiagnosed"
+hypertension_woutcontrolled$Dataset <- "withcontrolled"
+
+diagnosed <- rbind(hypertension_woutundiagnosed, hypertension_woutcontrolled)
+
+# Grouped bar plot to compare AgeGroup distribution across two datasets
+ggplot(diagnosed, aes(x = AgeGroup, fill = Dataset)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Comparison of Age Group Distribution Between diagnosed and Controlled", 
+       x = "Age Group", y = "Count") +
+  theme_minimal()
+
+#BMI
+# contingency table without undiagnosed 
+print('with diagnosed')
+table(hypertension_woutundiagnosed$BMI)
+
+# contingency table without uncontrolled
+print('with uncontrolled')
+table(hypertension_woutcontrolled$BMI)
+
+##Ethnicity
+# contingency table without undiagnosed 
+print('with diagnosed')
+table(hypertension_woutundiagnosed$Ethnicity)
+
+# contingency table without uncontrolled
+print('with uncontrolled')
+table(hypertension_woutcontrolled$Ethnicity)
+
+#ETHNICITY
+#ETHNICITY - Combining the datasets for visualisation
+hypertension_woutundiagnosed$Dataset <- "with diagnosed"
+hypertension_woutcontrolled$Dataset <- "with controlled"
+
+# Combining the two datasets
+diagnosed <- rbind(hypertension_woutundiagnosed, hypertension_woutcontrolled)
+
+# Convering Ethnicity to factor if it's not already
+diagnosed$Ethnicity <- as.factor(diagnosed$Ethnicity)
+
+# Grouped bar plot to compare Ethnicity distribution across the two datasets
+ggplot(diagnosed, aes(x = Ethnicity, fill = Dataset)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Ethnicity Distribution Between diagnosed and controlled", 
+       x = "Ethnicity", y = "Count") +
+  theme_minimal()
+
+pale_blue_palette <- colorRampPalette(c("lightblue", "skyblue", "steelblue"))
+
+
+#EDUCATION
+# Pie Chart for Undiagnosed Hypertension
+woutundiagnosed_education <- table(hypertension_woutundiagnosed$Education)
+pie(woutundiagnosed_education, 
+    main = "Education Distribution in diagnosed Hypertension", 
+    col = pale_blue_palette(length(woutundiagnosed_education)))
+
+# Pie Chart for Uncontrolled Hypertension
+uncontrolled_education <- table(hypertension_woutcontrolled$Education)
+pie(uncontrolled_education, 
+    main = "Education Distribution in controlled Hypertension", 
+    col = pale_blue_palette(length(uncontrolled_education)))
+
+```
+
+
+
+```{r}
+#AGE GROUP, BMI, ETHNICITY AND EDUCATION 
+
+# WITH UNDIAGNOSED AND UNCONTROLLED HYPERTENSION
+
+#AGE GROUP
+#Age distribution of both with diagnosed and undiagnosed
+
+# Adding a column to distinguish diagnosed from undiagnosed
+hypertension_withundiagnosed$Dataset <- "withundiagnosed"
+hypertension_withuncontrolled$Dataset <- "withuncontrolled"
+
+diagnosed <- rbind(hypertension_withundiagnosed, hypertension_withuncontrolled)
+
+# Grouped bar plot to compare AgeGroup distribution across two datasets
+ggplot(diagnosed, aes(x = AgeGroup, fill = Dataset)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Comparison of Age Group Distribution Between Undiagnosed and Uncontrolled", 
+       x = "Age Group", y = "Count") +
+  theme_minimal()
+
+#BMI
+# contingency table with undiagnosed 
+print('with undiagnosed')
+table(hypertension_withundiagnosed$BMI)
+
+# contingency table with uncontrolled
+print('with uncontrolled')
+table(hypertension_withuncontrolled$BMI)
+
+#ETHNICITY
+#ETHNICITY - Combining the datasets 
+hypertension_withundiagnosed$Dataset <- "withundiagnosed"
+hypertension_withuncontrolled$Dataset <- "withuncontrolled"
+diagnosed <- rbind(hypertension_withundiagnosed, hypertension_withuncontrolled)
+
+# Converting Ethnicity to factor 
+diagnosed$Ethnicity <- as.factor(diagnosed$Ethnicity)
+
+# Grouped bar plot to compare Ethnicity distribution across the two datasets
+ggplot(diagnosed, aes(x = Ethnicity, fill = Dataset)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Comparison of Ethnicity Distribution Between Undiagnosed and Uncontrolled", 
+       x = "Ethnicity", y = "Count") +
+  theme_minimal()
+
+#EDUCATION
+# Pie Chart for Undiagnosed Hypertension
+undiagnosed_education <- table(hypertension_withundiagnosed$Education)
+pie(undiagnosed_education, 
+    main = "Education Distribution in Undiagnosed Hypertension", 
+    col = rainbow(length(undiagnosed_education)))
+
+# Pie Chart for Uncontrolled Hypertension
+uncontrolled_education <- table(hypertension_withuncontrolled$Education)
+pie(uncontrolled_education, 
+    main = "Education Distribution in Uncontrolled Hypertension", 
+    col = rainbow(length(uncontrolled_education)))
+
+```
+
+```{r}
+#UNDIAGNOSED HYPERTENSION BELOW 44YRS
+print('with undiagnosed')
+table(hypertension_withundiagnosed$AgeGroup)
+
+#WITH UNCONTROLLED HYPERTENSION
+print('with uncontrolled')
+table(hypertension_withuncontrolled$AgeGroup)
+
+#  frequency tables for each dataset
+undiagnosed <- table(hypertension_withundiagnosed$AgeGroup)
+uncontrolled <- table(hypertension_withuncontrolled$AgeGroup)
+
+# Combining the tables
+combined_table <- data.frame(
+  AgeGroup = names(undiagnosed), 
+  Undiagnosed = as.vector(undiagnosed), 
+  Uncontrolled = as.vector(uncontrolled[match(names(undiagnosed), names(uncontrolled))]) 
+)
+
+
+# Print the combined table
+print(combined_table)
+
+
+```
+
+
+
+```{r}
+table(hypertension_withundiagnosed$Ethnicity)
+
+table(hypertension_withundiagnosed$BMI)
+```
+
+
+
+
+```{r}
+#ALCOHOL 
+
+# Loading the dataset from the Excel file
+hypertension_withundiagnosed <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 1)
+
+#with Uncontrolled hypertension
+hypertension_withuncontrolled <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/dummy_datasets.xlsx", sheet = 3)
+
+# AlcoholConsumption and BMI columns format
+hypertension_withundiagnosed$AlcoholConsumption <- as.factor(hypertension_withundiagnosed$AlcoholConsumption)
+hypertension_withundiagnosed$BMI <- as.numeric(as.character(hypertension_withundiagnosed$BMI))
+
+hypertension_withuncontrolled$AlcoholConsumption <- as.factor(hypertension_withuncontrolled$AlcoholConsumption)
+hypertension_withuncontrolled$BMI <- as.numeric(as.character(hypertension_withuncontrolled$BMI))
+
+# Checking for unique values of AlcoholConsumption
+print(unique(hypertension_withundiagnosed$AlcoholConsumption))
+
+
+# Creating a summary of the data by alcohol consumption category
+alcohol_summary <- hypertension_withundiagnosed %>%
+  group_by(AlcoholConsumption) %>%
+  summarize(Count = n(), Average_BMI = mean(BMI, na.rm = TRUE))
+print(alcohol_summary)
+
+alcohol_summary2 <- hypertension_withuncontrolled %>%
+  group_by(AlcoholConsumption) %>%
+  summarize(Count = n(), Average_BMI = mean(BMI, na.rm = TRUE))
+print(alcohol_summary2)
+
+# Bar Plot for Alcohol Consumption Categories-Undiagnosed hypertension
+ggplot(alcohol_summary, aes(x = AlcoholConsumption, y = Count, fill = AlcoholConsumption)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Alcohol Consumption Categories of Undiagnosed Hypertension",
+       x = "Alcohol Consumption Category", y = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  scale_fill_brewer(palette = "Set1")
+
+# Bar Plot for Alcohol Consumption Categories-Uncontrolled hypertension
+ggplot(alcohol_summary2, aes(x = AlcoholConsumption, y = Count, fill = AlcoholConsumption)) +
+  geom_bar(stat = "identity", fill = "darkblue", color = "black", alpha = 0.7) +
+  labs(title = "Alcohol Consumption Categories of Uncontrolled Hypertension",
+       x = "Alcohol Consumption Category", y = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+
+```
+
+```{r}
+
+
+#AgeGroup, Ethnicity, and Region are factors
+hypertension_withundiagnosed$AgeGroup <- as.factor(hypertension_withundiagnosed$AgeGroup)
+hypertension_withundiagnosed$Ethnicity <- as.factor(hypertension_withundiagnosed$Ethnicity)
+hypertension_withundiagnosed$Region <- as.factor(hypertension_withundiagnosed$Region)
+
+# Creating a new column to group regions into four regions
+hypertension_withundiagnosed <- hypertension_withundiagnosed %>%
+  mutate(RegionGroup = case_when(
+    Region %in% c("North East", "North West", "Yorkshire and the Humber") ~ "North",
+    Region %in% c("South East", "South West", "London") ~ "South",
+    Region %in% c("East Midlands", "East England") ~ "East",
+    Region == "West Midlands" ~ "West",
+    TRUE ~ "Other" 
+  ))
+
+# Filtering data for specific age groups
+age_groups_to_analyze <- c("16-24 years", "25-34 years", "35-44 years")
+filtered_data <- hypertension_withundiagnosed %>%
+  filter(AgeGroup %in% age_groups_to_analyze)
+
+# Counting the occurrences of each region group in the filtered age groups
+age_region_summary <- filtered_data %>%
+  group_by(AgeGroup, RegionGroup) %>%
+  summarize(Count = n(), .groups = 'drop')
+
+print(age_region_summary)
+
+# a bar plot of Age Group vs Region Group
+ggplot(age_region_summary, aes(x = AgeGroup, y = Count, fill = RegionGroup)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Distribution of Undiagnosed hypertension Across Regions",
+       x = "Age Group", y = "Count") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
+
+# Calculating percentages for each RegionGroup within each AgeGroup
+age_region_summary <- filtered_data %>%
+  group_by(AgeGroup, RegionGroup) %>%
+  summarize(Count = n(), .groups = 'drop') %>%
+  group_by(AgeGroup) %>%
+  mutate(Percentage = (Count / sum(Count)) * 100)
+
+print(age_region_summary)
+
+
+# Correcting percentage values to proportions
+age_region_summary <- age_region_summary %>%
+  mutate(PercentageProportion = Percentage / 100) # Convert percentages to proportions
+
+# Creating the corrected bar plot
+ggplot(age_region_summary, aes(x = AgeGroup, y = PercentageProportion, fill = RegionGroup)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = sprintf("%.1f%%", Percentage)), 
+            position = position_dodge(width = 0.9), 
+            vjust = -0.25, size = 3) + # Adding percentage labels
+  labs(title = "Distribution of Undiagnosed Hypertension Across Regions",
+       x = "Age Group", y = "Percentage") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_y_continuous(labels = scales::percent_format(), limits = c(0, 0.55)) 
+
+
+
+```
+
+```{r}
+
+#GENDER
+
+#loading datasets
+undiagnosed_gender <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/combined_hypertension_data.xlsx", sheet = 1)
+
+uncontrolled_gender <- read_excel("C:/Users/bibia/OneDrive/Masters Personal Project/combined_hypertension_data.xlsx", sheet = 2)
+
+
+
+# Creating tables
+undiagnosed_table <- table(undiagnosed_gender$Gender, undiagnosed_gender$hypertension_type)
+uncontrolled_table <- table(uncontrolled_gender$Gender, uncontrolled_gender$hypertension_type)
+
+# Adding labels for better readability
+colnames(undiagnosed_table) <- c("Undiagnosed", "Diagnosed")
+colnames(uncontrolled_table) <- c("Uncontrolled", "Controlled")
+rownames(undiagnosed_table) <- c("Female", "Male")
+rownames(uncontrolled_table) <- c("Female", "Male")
+
+# Display the tables
+
+print(undiagnosed_table)
+
+print(uncontrolled_table)
+
+
+
+#HO: There is no relationship between gender and hypertension type for uncontrolled hypertension
+#H1: There is a relationship between gender and hypertension type for uncontrolled hypertension
+
+# Creating a contingency table for Gender and Hypertension Type
+gender_hypertension_table <- table(uncontrolled_gender$Gender, uncontrolled_gender$hypertension_type)
+
+# Performing the Chi-Square Test
+chi_square_result <- chisq.test(gender_hypertension_table)
+
+chi_square_result
+
+
+```
+
